@@ -13462,6 +13462,15 @@ namespace ts {
                         if (containsMatchingReferenceDiscriminant(reference, left) || containsMatchingReferenceDiscriminant(reference, right)) {
                             return declaredType;
                         }
+                        if (isPropertyAccessExpression(left) && idText(left.name) === "constructor" && isIdentifier(right)) {
+                            const rightType = getTypeOfExpression(right);
+                            if (rightType && getSignaturesOfType(rightType, SignatureKind.Construct)) {
+                                const sign = getReturnTypeOfSignature(getErasedSignature(first(getSignaturesOfType(rightType, SignatureKind.Construct))));
+                                if (sign) {
+
+                                }
+                            }
+                        }
                         break;
                     case SyntaxKind.InstanceOfKeyword:
                         return narrowTypeByInstanceof(type, expr, assumeTrue);
