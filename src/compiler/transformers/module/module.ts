@@ -1563,6 +1563,9 @@ namespace ts {
             else if (isShorthandPropertyAssignment(node)) {
                 return substituteShorthandPropertyAssignment(node);
             }
+            else if (isPropertyAssignment(node)) {
+                return substitutePropertyAssignment(node);
+            }
 
             return node;
         }
@@ -1578,6 +1581,29 @@ namespace ts {
             const exportedOrImportedName = substituteExpressionIdentifier(name);
             if (exportedOrImportedName !== name) {
                 return setTextRange(createPropertyAssignment(name, exportedOrImportedName), node);
+            }
+            return node;
+        }
+
+        /**
+         * Substitution for a ShorthandPropertyAssignment whose declaration name is an imported
+         * or exported symbol.
+         *
+         * @param node The node to substitute.
+         */
+        function substitutePropertyAssignment(node: PropertyAssignment): ObjectLiteralElementLike {
+            const name = node.name;
+            if (isIdentifier(name)) {
+                const exportedOrImportedName = substituteExpressionIdentifier(name);
+                if (exportedOrImportedName !== name) {
+                    // A shorthand property with an assignment initializer is probably part of a
+                    // destructuring assignment
+                    if (node.equalsToken) {
+                        const initializer = createAssignment(exportedOrImportedName, node.initializer);
+                        return setTextRange(createPropertyAssignment(name, initializer), node);
+                    }
+                    return setTextRange(createPropertyAssignment(name, exportedOrImportedName), node);
+                }
             }
             return node;
         }

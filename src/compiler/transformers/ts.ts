@@ -3471,6 +3471,9 @@ namespace ts {
             else if (isShorthandPropertyAssignment(node)) {
                 return substituteShorthandPropertyAssignment(node);
             }
+            else if(isPropertyAssignment(node)) {
+                return substitutePropertyAssignment(node);
+            }
 
             return node;
         }
@@ -3481,6 +3484,25 @@ namespace ts {
                 const exportedName = trySubstituteNamespaceExportedName(name);
                 if (exportedName) {
                     return setTextRange(createPropertyAssignment(name, exportedName), node);
+                }
+            }
+            return node;
+        }
+
+        function substitutePropertyAssignment(node: PropertyAssignment): ObjectLiteralElementLike {
+            if (enabledSubstitutions & TypeScriptSubstitutionFlags.NamespaceExports) {
+                const name = node.name;
+                if (isIdentifier(name)) {
+                    const exportedName = trySubstituteNamespaceExportedName(name);
+                    if (exportedName) {
+                        // A shorthand property with an assignment initializer is probably part of a
+                        // destructuring assignment
+                        if (node.equalsToken) {
+                            const initializer = createAssignment(exportedName, node.initializer);
+                            return setTextRange(createPropertyAssignment(name, initializer), node);
+                        }
+                        return setTextRange(createPropertyAssignment(name, exportedName), node);
+                    }
                 }
             }
             return node;

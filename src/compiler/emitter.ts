@@ -2522,7 +2522,7 @@ namespace ts {
 
         function emitPropertyAssignment(node: PropertyAssignment) {
             emit(node.name);
-            writePunctuation(":");
+            node.equalsToken ? writePunctuation("=") : writePunctuation(":");
             writeSpace();
             // This is to ensure that we emit comment in the following case:
             //      For example:

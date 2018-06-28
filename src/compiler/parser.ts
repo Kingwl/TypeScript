@@ -4700,16 +4700,11 @@ namespace ts {
                 tokenIsIdentifier && (token() === SyntaxKind.CommaToken || token() === SyntaxKind.CloseBraceToken);
             if (isShorthandPropertyAssignment) {
                 node.kind = SyntaxKind.ShorthandPropertyAssignment;
-                // const equalsToken = parseOptionalToken(SyntaxKind.EqualsToken);
-                // if (equalsToken) {
-                //     (<ShorthandPropertyAssignment>node).equalsToken = equalsToken;
-                //     (<ShorthandPropertyAssignment>node).objectAssignmentInitializer = allowInAnd(parseAssignmentExpressionOrHigher);
-                // }
             }
             else {
                 node.kind = SyntaxKind.PropertyAssignment;
                 if (token() === SyntaxKind.EqualsToken) {
-                    (<PropertyAssignment>node).equalsToken = parseOptionalToken(SyntaxKind.EqualsToken);
+                    ;(<PropertyAssignment>node).equalsToken = parseOptionalToken(SyntaxKind.EqualsToken);
                 } else {
                     parseExpected(SyntaxKind.ColonToken);
                 }

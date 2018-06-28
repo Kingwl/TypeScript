@@ -859,7 +859,7 @@
         "category": "Error",
         "code": 1308
     },
-    "'=' can only be used in an object literal property inside a destructuring assignment.": {
+    "'=' can only be used in an object literal property inside a destructuring assignment. ": {
         "category": "Error",
         "code": 1312
     },

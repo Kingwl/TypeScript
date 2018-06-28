@@ -4608,6 +4608,10 @@ namespace ts {
         }
 
         if (isPropertyAssignment(bindingElement)) {
+            // `1` in `({ a = 1 } = ...)`
+            if (bindingElement.equalsToken) {
+                return bindingElement.initializer;
+            }
             // `1` in `({ a: b = 1 } = ...)`
             // `1` in `({ a: {b} = 1 } = ...)`
             // `1` in `({ a: [b] = 1 } = ...)`
