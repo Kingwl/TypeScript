@@ -2541,12 +2541,6 @@ namespace ts {
 
         function emitShorthandPropertyAssignment(node: ShorthandPropertyAssignment) {
             emit(node.name);
-            if (node.objectAssignmentInitializer) {
-                writeSpace();
-                writePunctuation("=");
-                writeSpace();
-                emitExpression(node.objectAssignmentInitializer);
-            }
         }
 
         function emitSpreadAssignment(node: SpreadAssignment) {

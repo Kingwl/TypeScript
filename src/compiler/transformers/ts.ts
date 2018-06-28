@@ -3480,12 +3480,6 @@ namespace ts {
                 const name = node.name;
                 const exportedName = trySubstituteNamespaceExportedName(name);
                 if (exportedName) {
-                    // A shorthand property with an assignment initializer is probably part of a
-                    // destructuring assignment
-                    if (node.objectAssignmentInitializer) {
-                        const initializer = createAssignment(exportedName, node.objectAssignmentInitializer);
-                        return setTextRange(createPropertyAssignment(name, initializer), node);
-                    }
                     return setTextRange(createPropertyAssignment(name, exportedName), node);
                 }
             }

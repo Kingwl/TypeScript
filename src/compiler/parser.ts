@@ -85,9 +85,7 @@ namespace ts {
                 return visitNodes(cbNode, cbNodes, node.decorators) ||
                     visitNodes(cbNode, cbNodes, node.modifiers) ||
                     visitNode(cbNode, (<ShorthandPropertyAssignment>node).name) ||
-                    visitNode(cbNode, (<ShorthandPropertyAssignment>node).questionToken) ||
-                    visitNode(cbNode, (<ShorthandPropertyAssignment>node).equalsToken) ||
-                    visitNode(cbNode, (<ShorthandPropertyAssignment>node).objectAssignmentInitializer);
+                    visitNode(cbNode, (<ShorthandPropertyAssignment>node).questionToken)
             case SyntaxKind.SpreadAssignment:
                 return visitNode(cbNode, (<SpreadAssignment>node).expression);
             case SyntaxKind.Parameter:
@@ -118,6 +116,7 @@ namespace ts {
                     visitNodes(cbNode, cbNodes, node.modifiers) ||
                     visitNode(cbNode, (<PropertyAssignment>node).name) ||
                     visitNode(cbNode, (<PropertyAssignment>node).questionToken) ||
+                    visitNode(cbNode, (<PropertyAssignment>node).equalsToken) ||
                     visitNode(cbNode, (<PropertyAssignment>node).initializer);
             case SyntaxKind.VariableDeclaration:
                 return visitNodes(cbNode, cbNodes, node.decorators) ||
@@ -4698,18 +4697,22 @@ namespace ts {
             //     IdentifierReference[?Yield] Initializer[In, ?Yield]
             // this is necessary because ObjectLiteral productions are also used to cover grammar for ObjectAssignmentPattern
             const isShorthandPropertyAssignment =
-                tokenIsIdentifier && (token() === SyntaxKind.CommaToken || token() === SyntaxKind.CloseBraceToken || token() === SyntaxKind.EqualsToken);
+                tokenIsIdentifier && (token() === SyntaxKind.CommaToken || token() === SyntaxKind.CloseBraceToken);
             if (isShorthandPropertyAssignment) {
                 node.kind = SyntaxKind.ShorthandPropertyAssignment;
-                const equalsToken = parseOptionalToken(SyntaxKind.EqualsToken);
-                if (equalsToken) {
-                    (<ShorthandPropertyAssignment>node).equalsToken = equalsToken;
-                    (<ShorthandPropertyAssignment>node).objectAssignmentInitializer = allowInAnd(parseAssignmentExpressionOrHigher);
-                }
+                // const equalsToken = parseOptionalToken(SyntaxKind.EqualsToken);
+                // if (equalsToken) {
+                //     (<ShorthandPropertyAssignment>node).equalsToken = equalsToken;
+                //     (<ShorthandPropertyAssignment>node).objectAssignmentInitializer = allowInAnd(parseAssignmentExpressionOrHigher);
+                // }
             }
             else {
                 node.kind = SyntaxKind.PropertyAssignment;
-                parseExpected(SyntaxKind.ColonToken);
+                if (token() === SyntaxKind.EqualsToken) {
+                    (<PropertyAssignment>node).equalsToken = parseOptionalToken(SyntaxKind.EqualsToken);
+                } else {
+                    parseExpected(SyntaxKind.ColonToken);
+                }
                 (<PropertyAssignment>node).initializer = allowInAnd(parseAssignmentExpressionOrHigher);
             }
             return finishNode(node);

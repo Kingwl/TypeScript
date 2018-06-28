@@ -871,6 +871,7 @@ namespace ts {
         kind: SyntaxKind.PropertyAssignment;
         name: PropertyName;
         questionToken?: QuestionToken;
+        equalsToken?: EqualsToken;
         initializer: Expression;
     }
 
@@ -879,10 +880,6 @@ namespace ts {
         kind: SyntaxKind.ShorthandPropertyAssignment;
         name: Identifier;
         questionToken?: QuestionToken;
-        // used when ObjectLiteralExpression is used in ObjectAssignmentPattern
-        // it is grammar error to appear in actual object initializer
-        equalsToken?: Token<SyntaxKind.EqualsToken>;
-        objectAssignmentInitializer?: Expression;
     }
 
     export interface SpreadAssignment extends ObjectLiteralElement, JSDocContainer {

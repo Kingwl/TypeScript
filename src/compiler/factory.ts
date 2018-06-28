@@ -2401,6 +2401,7 @@ namespace ts {
         const node = <PropertyAssignment>createSynthesizedNode(SyntaxKind.PropertyAssignment);
         node.name = asName(name);
         node.questionToken = undefined;
+        node.equalsToken = undefined;
         node.initializer = parenthesizeExpressionForList(initializer);
         return node;
     }
@@ -2412,18 +2413,14 @@ namespace ts {
             : node;
     }
 
-    export function createShorthandPropertyAssignment(name: string | Identifier, objectAssignmentInitializer?: Expression) {
+    export function createShorthandPropertyAssignment(name: string | Identifier) {
         const node = <ShorthandPropertyAssignment>createSynthesizedNode(SyntaxKind.ShorthandPropertyAssignment);
         node.name = asName(name);
-        node.objectAssignmentInitializer = objectAssignmentInitializer !== undefined ? parenthesizeExpressionForList(objectAssignmentInitializer) : undefined;
         return node;
     }
 
-    export function updateShorthandPropertyAssignment(node: ShorthandPropertyAssignment, name: Identifier, objectAssignmentInitializer: Expression | undefined) {
-        return node.name !== name
-            || node.objectAssignmentInitializer !== objectAssignmentInitializer
-            ? updateNode(createShorthandPropertyAssignment(name, objectAssignmentInitializer), node)
-            : node;
+    export function updateShorthandPropertyAssignment(node: ShorthandPropertyAssignment, name: Identifier) {
+        return node.name !== name ? updateNode(createShorthandPropertyAssignment(name), node) : node;
     }
 
     export function createSpreadAssignment(expression: Expression) {
@@ -4620,11 +4617,6 @@ namespace ts {
                 : undefined;
         }
 
-        if (isShorthandPropertyAssignment(bindingElement)) {
-            // `1` in `({ a = 1 } = ...)`
-            return bindingElement.objectAssignmentInitializer;
-        }
-
         if (isAssignmentExpression(bindingElement, /*excludeCompoundAssignment*/ true)) {
             // `1` in `[a = 1] = ...`
             // `1` in `[{a} = 1] = ...`
@@ -4830,7 +4822,9 @@ namespace ts {
                 return setOriginalNode(setTextRange(createPropertyAssignment(element.propertyName, element.initializer ? createAssignment(expression, element.initializer) : expression), element), element);
             }
             Debug.assertNode(element.name, isIdentifier);
-            return setOriginalNode(setTextRange(createShorthandPropertyAssignment(<Identifier>element.name, element.initializer), element), element);
+            return setOriginalNode(setTextRange(element.initializer
+                    ? createPropertyAssignment(<Identifier>element.name, element.initializer)
+                    : createShorthandPropertyAssignment(<Identifier>element.name), element), element);
         }
         Debug.assertNode(element, isObjectLiteralElementLike);
         return <ObjectLiteralElementLike>element;

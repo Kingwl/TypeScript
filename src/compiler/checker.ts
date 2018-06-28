@@ -13527,10 +13527,6 @@ namespace ts {
             return getTypeOfDestructuredProperty(getAssignedType(node.parent), node.name);
         }
 
-        function getAssignedTypeOfShorthandPropertyAssignment(node: ShorthandPropertyAssignment): Type {
-            return getTypeWithDefault(getAssignedTypeOfPropertyAssignment(node), node.objectAssignmentInitializer!);
-        }
-
         function getAssignedType(node: Expression): Type {
             const { parent } = node;
             switch (parent.kind) {
@@ -13548,8 +13544,6 @@ namespace ts {
                     return getAssignedTypeOfSpreadExpression(<SpreadElement>parent);
                 case SyntaxKind.PropertyAssignment:
                     return getAssignedTypeOfPropertyAssignment(<PropertyAssignment>parent);
-                case SyntaxKind.ShorthandPropertyAssignment:
-                    return getAssignedTypeOfShorthandPropertyAssignment(<ShorthandPropertyAssignment>parent);
             }
             return errorType;
         }
@@ -16235,8 +16229,7 @@ namespace ts {
                         // If object literal is an assignment pattern and if the assignment pattern specifies a default value
                         // for the property, make the property optional.
                         const isOptional =
-                            (memberDecl.kind === SyntaxKind.PropertyAssignment && hasDefaultValue(memberDecl.initializer)) ||
-                            (memberDecl.kind === SyntaxKind.ShorthandPropertyAssignment && memberDecl.objectAssignmentInitializer);
+                            (memberDecl.kind === SyntaxKind.PropertyAssignment && hasDefaultValue(memberDecl.initializer));
                         if (isOptional) {
                             prop.flags |= SymbolFlags.Optional;
                         }
@@ -20416,7 +20409,7 @@ namespace ts {
 
         /** Note: If property cannot be a SpreadAssignment, then allProperties does not need to be provided */
         function checkObjectLiteralDestructuringPropertyAssignment(objectLiteralType: Type, property: ObjectLiteralElementLike, allProperties?: NodeArray<ObjectLiteralElementLike>) {
-            if (property.kind === SyntaxKind.PropertyAssignment || property.kind === SyntaxKind.ShorthandPropertyAssignment) {
+            if (property.kind === SyntaxKind.PropertyAssignment) {
                 const name = property.name;
                 if (name.kind === SyntaxKind.ComputedPropertyName) {
                     checkComputedPropertyName(name);
@@ -20432,13 +20425,7 @@ namespace ts {
                     isNumericLiteralName(text) && getIndexTypeOfType(objectLiteralType, IndexKind.Number) ||
                     getIndexTypeOfType(objectLiteralType, IndexKind.String);
                 if (type) {
-                    if (property.kind === SyntaxKind.ShorthandPropertyAssignment) {
-                        return checkDestructuringAssignment(property, type);
-                    }
-                    else {
-                        // non-shorthand property assignments should always have initializers
-                        return checkDestructuringAssignment(property.initializer, type);
-                    }
+                    return checkDestructuringAssignment(property.initializer, type);
                 }
                 else {
                     error(name, Diagnostics.Type_0_has_no_property_1_and_no_string_index_signature, typeToString(objectLiteralType), declarationNameToString(name));
@@ -20524,25 +20511,8 @@ namespace ts {
             return undefined;
         }
 
-        function checkDestructuringAssignment(exprOrAssignment: Expression | ShorthandPropertyAssignment, sourceType: Type, checkMode?: CheckMode): Type {
-            let target: Expression;
-            if (exprOrAssignment.kind === SyntaxKind.ShorthandPropertyAssignment) {
-                const prop = <ShorthandPropertyAssignment>exprOrAssignment;
-                if (prop.objectAssignmentInitializer) {
-                    // In strict null checking mode, if a default value of a non-undefined type is specified, remove
-                    // undefined from the final type.
-                    if (strictNullChecks &&
-                        !(getFalsyFlags(checkExpression(prop.objectAssignmentInitializer)) & TypeFlags.Undefined)) {
-                        sourceType = getTypeWithFacts(sourceType, TypeFacts.NEUndefined);
-                    }
-                    checkBinaryLikeExpression(prop.name, prop.equalsToken!, prop.objectAssignmentInitializer, checkMode);
-                }
-                target = (<ShorthandPropertyAssignment>exprOrAssignment).name;
-            }
-            else {
-                target = exprOrAssignment;
-            }
-
+        function checkDestructuringAssignment(exprOrAssignment: Expression, sourceType: Type, checkMode?: CheckMode): Type {
+            let target = exprOrAssignment;
             if (target.kind === SyntaxKind.BinaryExpression && (<BinaryExpression>target).operatorToken.kind === SyntaxKind.EqualsToken) {
                 checkBinaryExpression(<BinaryExpression>target, checkMode);
                 target = (<BinaryExpression>target).left;
@@ -28228,7 +28198,11 @@ namespace ts {
             }
         }
 
-        function checkGrammarForInvalidQuestionMark(questionToken: Node | undefined, message: DiagnosticMessage): boolean {
+        function checkGrammarForInvalidEqualsMark(equalsToken: EqualsToken | undefined, message: DiagnosticMessage): boolean {
+            return !!equalsToken && grammarErrorOnNode(equalsToken, message);
+        }
+
+        function checkGrammarForInvalidQuestionMark(questionToken: QuestionToken | undefined, message: DiagnosticMessage): boolean {
             return !!questionToken && grammarErrorOnNode(questionToken, message);
         }
 
@@ -28251,10 +28225,8 @@ namespace ts {
                     checkGrammarComputedPropertyName(name);
                 }
 
-                if (prop.kind === SyntaxKind.ShorthandPropertyAssignment && !inDestructuring && prop.objectAssignmentInitializer) {
-                    // having objectAssignmentInitializer is only valid in ObjectAssignmentPattern
-                    // outside of destructuring it is a syntax error
-                    return grammarErrorOnNode(prop.equalsToken!, Diagnostics.can_only_be_used_in_an_object_literal_property_inside_a_destructuring_assignment);
+                if (prop.kind === SyntaxKind.PropertyAssignment && !inDestructuring) {
+                    checkGrammarForInvalidEqualsMark(prop.equalsToken, Diagnostics.can_only_be_used_in_an_object_literal_property_inside_a_destructuring_assignment);
                 }
 
                 // Modifiers are never allowed on properties except for 'async' on a method declaration
@@ -28277,6 +28249,7 @@ namespace ts {
                 let currentKind: Flags;
                 switch (prop.kind) {
                     case SyntaxKind.PropertyAssignment:
+                        checkGrammarForInvalidEqualsMark(prop.equalsToken, Diagnostics.An_object_member_cannot_be_set_as_a_property_declaration);
                     case SyntaxKind.ShorthandPropertyAssignment:
                         // Grammar checking for computedPropertyName and shorthandPropertyAssignment
                         checkGrammarForInvalidQuestionMark(prop.questionToken, Diagnostics.An_object_member_cannot_be_declared_optional);

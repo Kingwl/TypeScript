@@ -899,8 +899,7 @@ namespace ts {
 
             case SyntaxKind.ShorthandPropertyAssignment:
                 return updateShorthandPropertyAssignment(<ShorthandPropertyAssignment>node,
-                    visitNode((<ShorthandPropertyAssignment>node).name, visitor, isIdentifier),
-                    visitNode((<ShorthandPropertyAssignment>node).objectAssignmentInitializer, visitor, isExpression));
+                    visitNode((<ShorthandPropertyAssignment>node).name, visitor, isIdentifier));
 
             case SyntaxKind.SpreadAssignment:
                 return updateSpreadAssignment(<SpreadAssignment>node,
@@ -1427,7 +1426,6 @@ namespace ts {
 
             case SyntaxKind.ShorthandPropertyAssignment:
                 result = reduceNode((<ShorthandPropertyAssignment>node).name, cbNode, result);
-                result = reduceNode((<ShorthandPropertyAssignment>node).objectAssignmentInitializer, cbNode, result);
                 break;
 
             case SyntaxKind.SpreadAssignment:
