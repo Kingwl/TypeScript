@@ -1,0 +1,146 @@
+=== tests/cases/compiler/a.js ===
+if((0)<0>(0)){ }
+>(0)<0>(0) : boolean
+>(0)<0 : boolean
+>(0) : 0
+>0 : 0
+>0 : 0
+>(0) : 0
+>0 : 0
+
+function f1() {}
+>f1 : () => void
+
+f1<1>();
+>f1<1>() : boolean
+>f1<1 : boolean
+>f1 : () => void
+>1 : 1
+>() : any
+> : any
+
+new f1<1>();
+>new f1<1>() : boolean
+>new f1<1 : boolean
+>new f1 : any
+>f1 : () => void
+>1 : 1
+>() : any
+> : any
+
+function t1(a) {}
+>t1 : (a: any) => void
+>a : any
+
+t1<1>``;
+>t1<1>`` : boolean
+>t1<1 : boolean
+>t1 : (a: any) => void
+>1 : 1
+>`` : ""
+
+function sealed1(a) { return function seal(ctor) {} }
+>sealed1 : (a: any) => (ctor: any) => void
+>a : any
+>function seal(ctor) {} : (ctor: any) => void
+>seal : (ctor: any) => void
+>ctor : any
+
+@sealed1<1>(1)
+>sealed1 : (a: any) => (ctor: any) => void
+><1>(1) : boolean
+><1 : boolean
+> : any
+>1 : 1
+>(1) : 1
+>1 : 1
+
+class Greeter1 {}
+>Greeter1 : Greeter1
+
+=== tests/cases/compiler/b.jsx ===
+if((0)<0>(0)){ }
+>(0)<0>(0) : boolean
+>(0)<0 : boolean
+>(0) : 0
+>0 : 0
+>0 : 0
+>(0) : 0
+>0 : 0
+
+function Test1() {}
+>Test1 : () => void
+
+const a1 = <Test1<1>></Test1>;
+>a1 : any
+><Test1< : any
+><Test1 : any
+>Test1 : () => void
+>< : any
+> : any
+>1>> : number
+>1 : 1
+> : any
+>Test1> : boolean
+>Test1 : () => void
+> : any
+
+=== tests/cases/compiler/c.ts ===
+if((0)<0>(0)){ }
+>(0)<0>(0) : any
+>(0) : 0
+>0 : 0
+>0 : 0
+
+function f2<T>() {}
+>f2 : <T>() => void
+
+f2<1>();
+>f2<1>() : void
+>f2 : <T>() => void
+
+new f2<1>();
+>new f2<1>() : any
+>f2 : <T>() => void
+
+function t2<T>(a) {}
+>t2 : <T>(a: any) => void
+>a : any
+
+t2<1>``;
+>t2<1>`` : void
+>t2 : <T>(a: any) => void
+>`` : ""
+
+function sealed2<T>(a: T) { return function seal(ctor) {} }
+>sealed2 : <T>(a: T) => (ctor: any) => void
+>a : T
+>function seal(ctor) {} : (ctor: any) => void
+>seal : (ctor: any) => void
+>ctor : any
+
+@sealed2<1>(1)
+>sealed2<1>(1) : (ctor: any) => void
+>sealed2 : <T>(a: T) => (ctor: any) => void
+>1 : 1
+
+class Greeter2 {}
+>Greeter2 : Greeter2
+
+=== tests/cases/compiler/d.tsx ===
+if((0)<0>(0)){ }
+>(0)<0>(0) : any
+>(0) : 0
+>0 : 0
+>0 : 0
+
+function Test2<T>() {}
+>Test2 : <T>() => void
+
+const a2 = <Test2<1>></Test2>
+>a2 : any
+><Test2<1>></Test2> : any
+>Test2 : <T>() => void
+>Test2 : <T>() => void
+
+

@@ -1,0 +1,91 @@
+tests/cases/compiler/a.js(1,4): error TS2365: Operator '>' cannot be applied to types 'boolean' and 'number'.
+tests/cases/compiler/a.js(4,1): error TS2365: Operator '<' cannot be applied to types '() => void' and 'number'.
+tests/cases/compiler/a.js(4,7): error TS1109: Expression expected.
+tests/cases/compiler/a.js(5,11): error TS1109: Expression expected.
+tests/cases/compiler/a.js(8,1): error TS2365: Operator '<' cannot be applied to types '(a: any) => void' and 'number'.
+tests/cases/compiler/a.js(8,1): error TS2365: Operator '>' cannot be applied to types 'boolean' and 'string'.
+tests/cases/compiler/a.js(11,9): error TS1146: Declaration expected.
+tests/cases/compiler/a.js(11,9): error TS2365: Operator '>' cannot be applied to types 'boolean' and 'number'.
+tests/cases/compiler/b.jsx(1,4): error TS2365: Operator '>' cannot be applied to types 'boolean' and 'number'.
+tests/cases/compiler/b.jsx(4,12): error TS2695: Left side of comma operator is unused and has no side effects.
+tests/cases/compiler/b.jsx(4,18): error TS1003: Identifier expected.
+tests/cases/compiler/b.jsx(4,19): error TS1003: Identifier expected.
+tests/cases/compiler/b.jsx(4,22): error TS1109: Expression expected.
+tests/cases/compiler/b.jsx(4,30): error TS1109: Expression expected.
+tests/cases/compiler/c.ts(1,4): error TS2349: Cannot invoke an expression whose type lacks a call signature. Type 'Number' has no compatible call signatures.
+tests/cases/compiler/d.tsx(1,4): error TS2349: Cannot invoke an expression whose type lacks a call signature. Type 'Number' has no compatible call signatures.
+
+
+==== tests/cases/compiler/a.js (8 errors) ====
+    if((0)<0>(0)){ }
+       ~~~~~~~~~
+!!! error TS2365: Operator '>' cannot be applied to types 'boolean' and 'number'.
+    
+    function f1() {}
+    f1<1>();
+    ~~~~
+!!! error TS2365: Operator '<' cannot be applied to types '() => void' and 'number'.
+          ~
+!!! error TS1109: Expression expected.
+    new f1<1>();
+              ~
+!!! error TS1109: Expression expected.
+    
+    function t1(a) {}
+    t1<1>``;
+    ~~~~
+!!! error TS2365: Operator '<' cannot be applied to types '(a: any) => void' and 'number'.
+    ~~~~~~~
+!!! error TS2365: Operator '>' cannot be applied to types 'boolean' and 'string'.
+    
+    function sealed1(a) { return function seal(ctor) {} }
+    @sealed1<1>(1)
+            
+!!! error TS1146: Declaration expected.
+            ~~~~~~
+!!! error TS2365: Operator '>' cannot be applied to types 'boolean' and 'number'.
+    class Greeter1 {}
+    
+==== tests/cases/compiler/b.jsx (6 errors) ====
+    if((0)<0>(0)){ }
+       ~~~~~~~~~
+!!! error TS2365: Operator '>' cannot be applied to types 'boolean' and 'number'.
+    
+    function Test1() {}
+    const a1 = <Test1<1>></Test1>;
+               ~~~~~~
+!!! error TS2695: Left side of comma operator is unused and has no side effects.
+                     ~
+!!! error TS1003: Identifier expected.
+                      ~
+!!! error TS1003: Identifier expected.
+                         ~~
+!!! error TS1109: Expression expected.
+                                 ~
+!!! error TS1109: Expression expected.
+    
+==== tests/cases/compiler/c.ts (1 errors) ====
+    if((0)<0>(0)){ }
+       ~~~~~~~~~
+!!! error TS2349: Cannot invoke an expression whose type lacks a call signature. Type 'Number' has no compatible call signatures.
+    
+    function f2<T>() {}
+    f2<1>();
+    new f2<1>();
+    
+    function t2<T>(a) {}
+    t2<1>``;
+    
+    function sealed2<T>(a: T) { return function seal(ctor) {} }
+    @sealed2<1>(1)
+    class Greeter2 {}
+    
+==== tests/cases/compiler/d.tsx (1 errors) ====
+    if((0)<0>(0)){ }
+       ~~~~~~~~~
+!!! error TS2349: Cannot invoke an expression whose type lacks a call signature. Type 'Number' has no compatible call signatures.
+    
+    function Test2<T>() {}
+    const a2 = <Test2<1>></Test2>
+    
+    

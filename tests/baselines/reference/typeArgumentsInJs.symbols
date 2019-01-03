@@ -1,0 +1,90 @@
+=== tests/cases/compiler/a.js ===
+if((0)<0>(0)){ }
+
+function f1() {}
+>f1 : Symbol(f1, Decl(a.js, 0, 16))
+
+f1<1>();
+>f1 : Symbol(f1, Decl(a.js, 0, 16))
+
+new f1<1>();
+>f1 : Symbol(f1, Decl(a.js, 0, 16))
+
+function t1(a) {}
+>t1 : Symbol(t1, Decl(a.js, 4, 12))
+>a : Symbol(a, Decl(a.js, 6, 12))
+
+t1<1>``;
+>t1 : Symbol(t1, Decl(a.js, 4, 12))
+
+function sealed1(a) { return function seal(ctor) {} }
+>sealed1 : Symbol(sealed1, Decl(a.js, 7, 8))
+>a : Symbol(a, Decl(a.js, 9, 17))
+>seal : Symbol(seal, Decl(a.js, 9, 28))
+>ctor : Symbol(ctor, Decl(a.js, 9, 43))
+
+@sealed1<1>(1)
+>sealed1 : Symbol(sealed1, Decl(a.js, 7, 8))
+
+class Greeter1 {}
+>Greeter1 : Symbol(Greeter1, Decl(a.js, 10, 14))
+
+=== tests/cases/compiler/b.jsx ===
+if((0)<0>(0)){ }
+
+function Test1() {}
+>Test1 : Symbol(Test1, Decl(b.jsx, 0, 16))
+
+const a1 = <Test1<1>></Test1>;
+>a1 : Symbol(a1, Decl(b.jsx, 3, 5))
+>Test1 : Symbol(Test1, Decl(b.jsx, 0, 16))
+>Test1 : Symbol(Test1, Decl(b.jsx, 0, 16))
+
+=== tests/cases/compiler/c.ts ===
+if((0)<0>(0)){ }
+
+function f2<T>() {}
+>f2 : Symbol(f2, Decl(c.ts, 0, 16))
+>T : Symbol(T, Decl(c.ts, 2, 12))
+
+f2<1>();
+>f2 : Symbol(f2, Decl(c.ts, 0, 16))
+
+new f2<1>();
+>f2 : Symbol(f2, Decl(c.ts, 0, 16))
+
+function t2<T>(a) {}
+>t2 : Symbol(t2, Decl(c.ts, 4, 12))
+>T : Symbol(T, Decl(c.ts, 6, 12))
+>a : Symbol(a, Decl(c.ts, 6, 15))
+
+t2<1>``;
+>t2 : Symbol(t2, Decl(c.ts, 4, 12))
+
+function sealed2<T>(a: T) { return function seal(ctor) {} }
+>sealed2 : Symbol(sealed2, Decl(c.ts, 7, 8))
+>T : Symbol(T, Decl(c.ts, 9, 17))
+>a : Symbol(a, Decl(c.ts, 9, 20))
+>T : Symbol(T, Decl(c.ts, 9, 17))
+>seal : Symbol(seal, Decl(c.ts, 9, 34))
+>ctor : Symbol(ctor, Decl(c.ts, 9, 49))
+
+@sealed2<1>(1)
+>sealed2 : Symbol(sealed2, Decl(c.ts, 7, 8))
+
+class Greeter2 {}
+>Greeter2 : Symbol(Greeter2, Decl(c.ts, 9, 59))
+
+=== tests/cases/compiler/d.tsx ===
+if((0)<0>(0)){ }
+
+function Test2<T>() {}
+>Test2 : Symbol(Test2, Decl(d.tsx, 0, 16))
+>T : Symbol(T, Decl(d.tsx, 2, 15))
+
+const a2 = <Test2<1>></Test2>
+>a2 : Symbol(a2, Decl(d.tsx, 3, 5))
+>Test2 : Symbol(Test2, Decl(d.tsx, 0, 16))
+>Test2 : Symbol(Test2, Decl(d.tsx, 0, 16))
+
+

@@ -4317,7 +4317,7 @@ namespace ts {
             }
 
             const tagName = parseJsxElementName();
-            const typeArguments = tryParseTypeArguments();
+            const typeArguments = isSourceFileNotJS(sourceFile) ? tryParseTypeArguments() : undefined;
             const attributes = parseJsxAttributes();
 
             let node: JsxOpeningLikeElement;
@@ -4528,7 +4528,7 @@ namespace ts {
                     // keep checking for postfix expressions.  Otherwise, it's just a '<' that's
                     // part of an arithmetic expression.  Break out so we consume it higher in the
                     // stack.
-                    const typeArguments = tryParse(parseTypeArgumentsInExpression);
+                    const typeArguments = isSourceFileNotJS(sourceFile) && tryParse(parseTypeArgumentsInExpression);
                     if (!typeArguments) {
                         return expression;
                     }
@@ -4823,7 +4823,7 @@ namespace ts {
             let typeArguments;
             while (true) {
                 expression = parseMemberExpressionRest(expression);
-                typeArguments = tryParse(parseTypeArgumentsInExpression);
+                typeArguments = isSourceFileNotJS(sourceFile) ? tryParse(parseTypeArgumentsInExpression) : undefined;
                 if (isTemplateStartOfTaggedTemplate()) {
                     Debug.assert(!!typeArguments,
                         "Expected a type argument list; all plain tagged template starts should be consumed in 'parseMemberExpressionRest'");
