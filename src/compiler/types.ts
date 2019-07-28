@@ -182,6 +182,7 @@ namespace ts {
         QuestionToken,
         ColonToken,
         AtToken,
+        QuestionDotToken,
         /** Only the JSDoc scanner produces BacktickToken. The normal scanner produces NoSubstitutionTemplateLiteral and related kinds. */
         BacktickToken,
         // Assignments
@@ -734,6 +735,7 @@ namespace ts {
     export type AwaitKeywordToken = Token<SyntaxKind.AwaitKeyword>;
     export type PlusToken = Token<SyntaxKind.PlusToken>;
     export type MinusToken = Token<SyntaxKind.MinusToken>;
+    export type QuestionDotToken = Token<SyntaxKind.QuestionDotToken>;
 
     export type Modifier
         = Token<SyntaxKind.AbstractKeyword>
@@ -1768,6 +1770,7 @@ namespace ts {
     export interface PropertyAccessExpression extends MemberExpression, NamedDeclaration {
         kind: SyntaxKind.PropertyAccessExpression;
         expression: LeftHandSideExpression;
+        questionDotToken?: QuestionDotToken
         name: Identifier;
     }
 
@@ -1784,6 +1787,7 @@ namespace ts {
     export interface ElementAccessExpression extends MemberExpression {
         kind: SyntaxKind.ElementAccessExpression;
         expression: LeftHandSideExpression;
+        questionDotToken?: QuestionDotToken
         argumentExpression: Expression;
     }
 
@@ -1798,6 +1802,7 @@ namespace ts {
         kind: SyntaxKind.CallExpression;
         expression: LeftHandSideExpression;
         typeArguments?: NodeArray<TypeNode>;
+        questionDotToken?: QuestionDotToken
         arguments: NodeArray<Expression>;
     }
 
@@ -1830,6 +1835,7 @@ namespace ts {
         kind: SyntaxKind.TaggedTemplateExpression;
         tag: LeftHandSideExpression;
         typeArguments?: NodeArray<TypeNode>;
+        questionDotToken?: QuestionDotToken
         template: TemplateLiteral;
     }
 

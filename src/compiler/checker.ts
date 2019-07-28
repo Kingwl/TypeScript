@@ -20593,7 +20593,8 @@ namespace ts {
 
         function checkPropertyAccessExpressionOrQualifiedName(node: PropertyAccessExpression | QualifiedName, left: Expression | QualifiedName, right: Identifier) {
             let propType: Type;
-            const leftType = checkNonNullExpression(left);
+            const isOptionalExpression = isPropertyAccessExpression(node) && node.questionDotToken
+            const leftType = isOptionalExpression ? getNonNullableType(checkExpression(left)) : checkNonNullExpression(left);
             const parentSymbol = getNodeLinks(left).resolvedSymbol;
             const assignmentKind = getAssignmentTargetKind(node);
             const apparentType = getApparentType(assignmentKind !== AssignmentKind.None || isMethodAccessForCall(node) ? getWidenedType(leftType) : leftType);
@@ -20645,7 +20646,9 @@ namespace ts {
                 }
                 propType = getConstraintForLocation(getTypeOfSymbol(prop), node);
             }
-            return getFlowTypeOfAccessExpression(node, prop, propType, right);
+
+            const resultType = getFlowTypeOfAccessExpression(node, prop, propType, right);
+            return isOptionalExpression ? getUnionType([resultType, undefinedType]) : resultType
         }
 
         function getFlowTypeOfAccessExpression(node: ElementAccessExpression | PropertyAccessExpression | QualifiedName, prop: Symbol | undefined, propType: Type, errorNode: Node) {
@@ -21002,7 +21005,8 @@ namespace ts {
         }
 
         function checkIndexedAccess(node: ElementAccessExpression): Type {
-            const exprType = checkNonNullExpression(node.expression);
+            const isOptionalExpression = node.questionDotToken;
+            const exprType = isOptionalExpression ? getNonNullableType(checkExpression(node.expression)) : checkNonNullExpression(node.expression);
             const objectType = getAssignmentTargetKind(node) !== AssignmentKind.None || isMethodAccessForCall(node) ? getWidenedType(exprType) : exprType;
 
             const indexExpression = node.argumentExpression;
@@ -21037,7 +21041,8 @@ namespace ts {
                 AccessFlags.Writing | (isGenericObjectType(objectType) && !isThisTypeParameter(objectType) ? AccessFlags.NoIndexSignatures : 0) :
                 AccessFlags.None;
             const indexedAccessType = getIndexedAccessTypeOrUndefined(objectType, effectiveIndexType, node, accessFlags) || errorType;
-            return checkIndexedAccessIndexType(getFlowTypeOfAccessExpression(node, indexedAccessType.symbol, indexedAccessType, indexExpression), node);
+            const resultType = checkIndexedAccessIndexType(getFlowTypeOfAccessExpression(node, indexedAccessType.symbol, indexedAccessType, indexExpression), node);
+            return isOptionalExpression ? getUnionType([resultType, undefinedType]) : resultType
         }
 
         function checkThatExpressionIsProperSymbolReference(expression: Expression, expressionType: Type, reportError: boolean): boolean {
@@ -22224,7 +22229,8 @@ namespace ts {
                 return resolveUntypedCall(node);
             }
 
-            const funcType = checkNonNullExpression(
+            const isOptionalExpression = node.questionDotToken
+            const funcType = isOptionalExpression ? getNonNullableType(checkExpression(node.expression)) :checkNonNullExpression(
                 node.expression,
                 Diagnostics.Cannot_invoke_an_object_which_is_possibly_null,
                 Diagnostics.Cannot_invoke_an_object_which_is_possibly_undefined,
@@ -22906,7 +22912,10 @@ namespace ts {
                     }
                 }
             }
-            return jsAssignmentType ? getIntersectionType([returnType, jsAssignmentType]) : returnType;
+            return jsAssignmentType ? getIntersectionType([returnType, jsAssignmentType]) : 
+                isCallExpression(node) && node.questionDotToken ? getUnionType(
+                    [returnType, undefinedType]
+                ) : returnType;
         }
 
         function isSymbolOrSymbolForCall(node: Node) {
@@ -23017,7 +23026,10 @@ namespace ts {
             if (languageVersion < ScriptTarget.ES2015) {
                 checkExternalEmitHelpers(node, ExternalEmitHelpers.MakeTemplateObject);
             }
-            return getReturnTypeOfSignature(getResolvedSignature(node));
+            const returnType = getReturnTypeOfSignature(getResolvedSignature(node))
+            return node.questionDotToken ? getUnionType(
+                [returnType, undefinedType]
+            ) : returnType;
         }
 
         function checkAssertion(node: AssertionExpression) {
@@ -25139,10 +25151,12 @@ namespace ts {
             // Optimize for the common case of a call to a function with a single non-generic call
             // signature where we can just fetch the return type without checking the arguments.
             if (expr.kind === SyntaxKind.CallExpression && (<CallExpression>expr).expression.kind !== SyntaxKind.SuperKeyword && !isRequireCall(expr, /*checkArgumentIsStringLiteralLike*/ true) && !isSymbolOrSymbolForCall(expr)) {
-                const funcType = checkNonNullExpression((<CallExpression>expr).expression);
+                const isOptionalExpression = (<CallExpression>expr).questionDotToken
+                const funcType = isOptionalExpression ? getNonNullableType(checkExpression((<CallExpression>expr).expression)) : checkNonNullExpression((<CallExpression>expr).expression);
                 const signature = getSingleCallSignature(funcType);
                 if (signature && !signature.typeParameters) {
-                    return getReturnTypeOfSignature(signature);
+                    const returnType = getReturnTypeOfSignature(signature)
+                    return isOptionalExpression ? getUnionType([returnType, undefinedType]) : returnType ;
                 }
             }
             else if (isAssertionExpression(expr) && !isConstTypeReference(expr.type)) {
