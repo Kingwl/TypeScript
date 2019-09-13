@@ -1,0 +1,13 @@
+=== tests/cases/conformance/async/esnext/topLevelAwait1.ts ===
+async function t () {
+>t : () => Promise<void>
+
+    await 1
+>await 1 : 1
+>1 : 1
+}
+
+await 1
+>await 1 : 1
+>1 : 1
+

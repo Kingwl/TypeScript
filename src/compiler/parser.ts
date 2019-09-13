@@ -840,6 +840,10 @@ namespace ts {
             if (isDeclarationFile) {
                 contextFlags |= NodeFlags.Ambient;
             }
+            
+            if (languageVersion === ScriptTarget.ESNext) {
+                contextFlags |= NodeFlags.AwaitContext;
+            }
 
             sourceFile = createSourceFile(fileName, languageVersion, scriptKind, isDeclarationFile);
             sourceFile.flags = contextFlags;

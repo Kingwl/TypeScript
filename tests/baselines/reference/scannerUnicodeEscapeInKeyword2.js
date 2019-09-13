@@ -40,7 +40,9 @@ const a = {def\u0061ult: 12}; // OK, `default` not in keyword position
 
 
 //// [file1.js]
-var \u0061wait = 12; // ok
+var ;
+await ;
+12; // ok
 async function main() {
     await 12; // not ok
 }
@@ -50,7 +52,9 @@ function* gen() {
 }
 //// [file2.js]
 var x = "hello"; // not ok
-var \u{0061}wait = 12; // ok
+var ;
+await ;
+12; // ok
 async function main() {
     await 12; // not ok
 }

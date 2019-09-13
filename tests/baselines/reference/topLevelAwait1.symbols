@@ -1,0 +1,9 @@
+=== tests/cases/conformance/async/esnext/topLevelAwait1.ts ===
+async function t () {
+>t : Symbol(t, Decl(topLevelAwait1.ts, 0, 0))
+
+    await 1
+}
+
+await 1
+
