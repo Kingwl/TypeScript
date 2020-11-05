@@ -436,6 +436,45 @@ namespace ts.textChanges {
             this.insertNodeAt(sourceFile, fnStart, tag, { preserveLeadingWhitespace: false, suffix: this.newLineCharacter + indent });
         }
 
+        public addJSDocTags(sourceFile: SourceFile, parent: HasJSDoc, newTags: readonly JSDocTag[]): void {
+            const comments = mapDefined(parent.jsDoc, j => j.comment);
+            const oldTags = flatMapToMutable(parent.jsDoc, j => j.tags);
+            const unmergedNewTags = newTags.filter(newTag => !oldTags || !oldTags.some((tag, i) => {
+                const merged = this.tryMergeJsdocTags(tag, newTag);
+                if (merged) oldTags[i] = merged;
+                return !!merged;
+            }));
+            const tag = factory.createJSDocComment(comments.join("\n"), factory.createNodeArray([...(oldTags || emptyArray), ...unmergedNewTags]));
+            const jsDocNode = parent.kind === SyntaxKind.ArrowFunction ? this.getJsDocNodeForArrowFunction(parent) : parent;
+            jsDocNode.jsDoc = parent.jsDoc;
+            jsDocNode.jsDocCache = parent.jsDocCache;
+            this.insertJsdocCommentBefore(sourceFile, jsDocNode, tag);
+        }
+    
+        public getJsDocNodeForArrowFunction(signature: ArrowFunction): HasJSDoc {
+            if (signature.parent.kind === SyntaxKind.PropertyDeclaration) {
+                return <HasJSDoc>signature.parent;
+            }
+            return <HasJSDoc>signature.parent.parent;
+        }
+    
+        public tryMergeJsdocTags(oldTag: JSDocTag, newTag: JSDocTag): JSDocTag | undefined {
+            if (oldTag.kind !== newTag.kind) {
+                return undefined;
+            }
+            switch (oldTag.kind) {
+                case SyntaxKind.JSDocParameterTag: {
+                    const oldParam = oldTag as JSDocParameterTag;
+                    const newParam = newTag as JSDocParameterTag;
+                    return isIdentifier(oldParam.name) && isIdentifier(newParam.name) && oldParam.name.escapedText === newParam.name.escapedText
+                        ? factory.createJSDocParameterTag(/*tagName*/ undefined, newParam.name, /*isBracketed*/ false, newParam.typeExpression, newParam.isNameFirst, oldParam.comment)
+                        : undefined;
+                }
+                case SyntaxKind.JSDocReturnTag:
+                    return factory.createJSDocReturnTag(/*tagName*/ undefined, (newTag as JSDocReturnTag).typeExpression, oldTag.comment);
+            }
+        }
+
         public replaceRangeWithText(sourceFile: SourceFile, range: TextRange, text: string): void {
             this.changes.push({ kind: ChangeKind.Text, sourceFile, range, text });
         }

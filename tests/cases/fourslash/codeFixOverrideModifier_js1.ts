@@ -9,14 +9,22 @@
 ////     foo (v) {}
 //// }
 //// class D extends B {
+////     /** @public */
 ////     foo (v) {}
-////     /**@override*/
-////     bar (v) {}
-//// }
-//// class C {
-////     /**@override*/
-////     foo () {}
 //// }
 
-verify.not.codeFixAvailable("Add 'override' modifier");
-verify.not.codeFixAvailable("Remove 'override' modifier");
+verify.codeFix({
+    description: "Add 'override' modifier",
+    index: 0,
+    newFileContent:
+`class B {
+    foo (v) {}
+}
+class D extends B {
+    /**
+     * @public
+     * @override
+     */
+    foo (v) {}
+}`,
+})

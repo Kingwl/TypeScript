@@ -1560,6 +1560,10 @@ namespace ts {
                         return emitJSDocTypeLiteral(node as JSDocTypeLiteral);
                     case SyntaxKind.JSDocClassTag:
                     case SyntaxKind.JSDocTag:
+                    case SyntaxKind.JSDocOverrideTag:
+                    case SyntaxKind.JSDocPublicTag:
+                    case SyntaxKind.JSDocPrivateTag:
+                    case SyntaxKind.JSDocProtectedTag:
                         return emitJSDocSimpleTag(node as JSDocTag);
                     case SyntaxKind.JSDocSeeTag:
                         return emitJSDocSeeTag(node as JSDocSeeTag);

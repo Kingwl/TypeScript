@@ -20,23 +20,24 @@ namespace ts.codefix {
         Diagnostics.This_parameter_property_must_be_rewritten_as_a_property_declaration_with_an_override_modifier_because_it_overrides_a_member_in_base_class_0.code
     ];
 
-    const errorCodeFixIdMap: Record<number, [DiagnosticMessage, string | undefined, DiagnosticMessage | undefined]> = {
+    const errorCodeFixIdMap: Record<number, [message: DiagnosticMessage, fixId: string, fixAllMessage: DiagnosticMessage, allowInjs: boolean]> = {
         [Diagnostics.This_member_must_have_an_override_modifier_because_it_overrides_a_member_in_the_base_class_0.code]: [
-            Diagnostics.Add_override_modifier, fixAddOverrideId, Diagnostics.Add_all_override_modifier,
+            Diagnostics.Add_override_modifier, fixAddOverrideId, Diagnostics.Add_all_override_modifier, true
         ],
         [Diagnostics.This_member_cannot_have_an_override_modifier_because_its_containing_class_0_does_not_extend_another_class.code]: [
-            Diagnostics.Remove_override_modifier, fixRemoveOverrideId, Diagnostics.Remove_all_override_modifier
+            Diagnostics.Remove_override_modifier, fixRemoveOverrideId, Diagnostics.Remove_all_override_modifier, true
         ],
         [Diagnostics.This_member_cannot_have_an_override_modifier_because_it_is_implemented_an_abstract_method_that_declared_in_the_base_class_0.code]: [
-            Diagnostics.Remove_override_modifier, fixRemoveOverrideId, Diagnostics.Remove_all_override_modifier
+            Diagnostics.Remove_override_modifier, fixRemoveOverrideId, Diagnostics.Remove_all_override_modifier, true
         ],
         [Diagnostics.This_member_cannot_have_an_override_modifier_because_it_is_not_declared_in_the_base_class_0.code]: [
-            Diagnostics.Remove_override_modifier, fixRemoveOverrideId, Diagnostics.Remove_all_override_modifier
+            Diagnostics.Remove_override_modifier, fixRemoveOverrideId, Diagnostics.Remove_all_override_modifier, true
         ],
         [Diagnostics.This_parameter_property_must_be_rewritten_as_a_property_declaration_with_an_override_modifier_because_it_overrides_a_member_in_base_class_0.code]: [
             Diagnostics.Convert_to_property_declaration_and_add_override_modifier,
             fixConvertToPropertyDeclarationId,
-            Diagnostics.Convert_all_to_property_declaration_and_add_override_modifier
+            Diagnostics.Convert_all_to_property_declaration_and_add_override_modifier,
+            false
         ]
     };
 
@@ -48,8 +49,8 @@ namespace ts.codefix {
             const info = errorCodeFixIdMap[errorCode];
             if (!info) return emptyArray;
 
-            const [ descriptions, fixId, fixAllDescriptions ] = info;
-            if (isSourceFileJS(sourceFile)) return emptyArray;
+            const [ descriptions, fixId, fixAllDescriptions, allowInjs ] = info;
+            if (!allowInjs && isSourceFileJS(sourceFile)) return emptyArray;
             const changes = textChanges.ChangeTracker.with(context, changes => dispatchChanges(changes, context, errorCode, span.start));
 
             return [
@@ -61,7 +62,7 @@ namespace ts.codefix {
             codeFixAll(context, errorCodes, (changes, diag) => {
                 const { code, start, file } = diag;
                 const info = errorCodeFixIdMap[code];
-                if (!info || info[1] !== context.fixId || isSourceFileJS(file)) {
+                if (!info || info[1] !== context.fixId || !info[3] && isSourceFileJS(file)) {
                     return;
                 }
 
@@ -90,15 +91,26 @@ namespace ts.codefix {
 
     function doAddOverrideModifierChange(changeTracker: textChanges.ChangeTracker, sourceFile: SourceFile, pos: number) {
         const classElement = findContainerClassElement(sourceFile, pos);
-        changeTracker.insertModifierBefore(sourceFile, SyntaxKind.OverrideKeyword, classElement);
+        if (isSourceFileJS(sourceFile)) {
+            changeTracker.addJSDocTags(sourceFile, classElement, [ factory.createJSDocOverrideTag(undefined) ]);
+        }
+        else {
+            changeTracker.insertModifierBefore(sourceFile, SyntaxKind.OverrideKeyword, classElement);
+        }
     }
 
     function doRemoveOverrideModifierChange(changeTracker: textChanges.ChangeTracker, sourceFile: SourceFile, pos: number) {
         const classElement = findContainerClassElement(sourceFile, pos);
-        const overrideModifier = classElement.modifiers && find(classElement.modifiers, modifier => modifier.kind === SyntaxKind.OverrideKeyword);
-        Debug.assertIsDefined(overrideModifier);
-
-        changeTracker.deleteModifier(sourceFile, overrideModifier);
+        if (isSourceFileJS(sourceFile)) {
+            const overrideTag = getJSDocOverrideTagNoCache(classElement);
+            Debug.assertIsDefined(overrideTag);
+            changeTracker.deleteNode(sourceFile, overrideTag);
+        }
+        else {
+            const overrideModifier = classElement.modifiers && find(classElement.modifiers, modifier => modifier.kind === SyntaxKind.OverrideKeyword);
+            Debug.assertIsDefined(overrideModifier);
+            changeTracker.deleteModifier(sourceFile, overrideModifier);
+        }
     }
 
     function doConvertToPropertyDeclaration(changeTracker: textChanges.ChangeTracker, sourceFile: SourceFile, pos: number) {
