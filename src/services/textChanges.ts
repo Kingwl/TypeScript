@@ -436,6 +436,7 @@ namespace ts.textChanges {
             this.insertNodeAt(sourceFile, fnStart, tag, { preserveLeadingWhitespace: false, suffix: this.newLineCharacter + indent });
         }
 
+
         public addJSDocTags(sourceFile: SourceFile, parent: HasJSDoc, newTags: readonly JSDocTag[]): void {
             const comments = mapDefined(parent.jsDoc, j => j.comment);
             const oldTags = flatMapToMutable(parent.jsDoc, j => j.tags);
@@ -450,14 +451,24 @@ namespace ts.textChanges {
             jsDocNode.jsDocCache = parent.jsDocCache;
             this.insertJsdocCommentBefore(sourceFile, jsDocNode, tag);
         }
-    
+
+        public filterJSDocTags(sourceFile: SourceFile, parent: HasJSDoc, cb: (tag: JSDocTag) => boolean): void {
+            const comments = mapDefined(parent.jsDoc, j => j.comment);
+            const oldTags = filter(flatMapToMutable(parent.jsDoc, j => j.tags), cb);
+            const tag = factory.createJSDocComment(comments.join("\n"), factory.createNodeArray([...(oldTags || emptyArray)]));
+            const jsDocNode = parent.kind === SyntaxKind.ArrowFunction ? this.getJsDocNodeForArrowFunction(parent) : parent;
+            jsDocNode.jsDoc = parent.jsDoc;
+            jsDocNode.jsDocCache = parent.jsDocCache;
+            this.insertJsdocCommentBefore(sourceFile, jsDocNode, tag);
+        }
+
         public getJsDocNodeForArrowFunction(signature: ArrowFunction): HasJSDoc {
             if (signature.parent.kind === SyntaxKind.PropertyDeclaration) {
                 return <HasJSDoc>signature.parent;
             }
             return <HasJSDoc>signature.parent.parent;
         }
-    
+
         public tryMergeJsdocTags(oldTag: JSDocTag, newTag: JSDocTag): JSDocTag | undefined {
             if (oldTag.kind !== newTag.kind) {
                 return undefined;

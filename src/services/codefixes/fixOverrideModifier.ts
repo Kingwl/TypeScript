@@ -92,7 +92,7 @@ namespace ts.codefix {
     function doAddOverrideModifierChange(changeTracker: textChanges.ChangeTracker, sourceFile: SourceFile, pos: number) {
         const classElement = findContainerClassElement(sourceFile, pos);
         if (isSourceFileJS(sourceFile)) {
-            changeTracker.addJSDocTags(sourceFile, classElement, [ factory.createJSDocOverrideTag(undefined) ]);
+            changeTracker.addJSDocTags(sourceFile, classElement, [ factory.createJSDocOverrideTag(/*tagName*/ undefined) ]);
         }
         else {
             changeTracker.insertModifierBefore(sourceFile, SyntaxKind.OverrideKeyword, classElement);
@@ -102,9 +102,7 @@ namespace ts.codefix {
     function doRemoveOverrideModifierChange(changeTracker: textChanges.ChangeTracker, sourceFile: SourceFile, pos: number) {
         const classElement = findContainerClassElement(sourceFile, pos);
         if (isSourceFileJS(sourceFile)) {
-            const overrideTag = getJSDocOverrideTagNoCache(classElement);
-            Debug.assertIsDefined(overrideTag);
-            changeTracker.deleteNode(sourceFile, overrideTag);
+            changeTracker.filterJSDocTags(sourceFile, classElement, not(isJSDocOverrideTag));
         }
         else {
             const overrideModifier = classElement.modifiers && find(classElement.modifiers, modifier => modifier.kind === SyntaxKind.OverrideKeyword);
