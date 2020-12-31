@@ -1,0 +1,4 @@
+=== tests/cases/compiler/shouldWarnIfKeywordAsDeclarationName2.ts ===
+type A<T> = T extends [infer enum] ? boolean : never;
+>A : A<T>
+

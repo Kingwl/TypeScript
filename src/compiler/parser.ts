@@ -3611,7 +3611,7 @@ namespace ts {
             const pos = getNodePos();
             return finishNode(
                 factory.createTypeParameterDeclaration(
-                    parseIdentifier(),
+                    parseIdentifierShouldNotBeKeyword(),
                     /*constraint*/ undefined,
                     /*defaultType*/ undefined
                 ),

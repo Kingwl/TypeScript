@@ -1,0 +1,7 @@
+tests/cases/compiler/shouldWarnIfKeywordAsDeclarationName2.ts(1,30): error TS1003: Identifier expected.
+
+
+==== tests/cases/compiler/shouldWarnIfKeywordAsDeclarationName2.ts (1 errors) ====
+    type A<T> = T extends [infer enum] ? boolean : never;
+                                 ~~~~
+!!! error TS1003: Identifier expected.
