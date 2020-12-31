@@ -31457,6 +31457,7 @@ namespace ts {
 
             checkSourceElement(node.constraint);
             checkSourceElement(node.default);
+            checkIdentifierShouldNotBeKeyword(node.name);
             const typeParameter = getDeclaredTypeOfTypeParameter(getSymbolOfNode(node));
             // Resolve base constraint to reveal circularity errors
             getBaseConstraintOfType(typeParameter);
@@ -31607,6 +31608,12 @@ namespace ts {
                         return true;
                     }
                 }
+            }
+        }
+
+        function checkIdentifierShouldNotBeKeyword(node?: Identifier, message?: DiagnosticMessage) {
+            if (node && node.shouldNotKeyword && node.originalKeywordKind) {
+                error(node, message || Diagnostics.Identifier_expected);
             }
         }
 

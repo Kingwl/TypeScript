@@ -1684,6 +1684,20 @@ namespace ts {
             return createIdentifier(tokenIsIdentifierOrKeyword(token()), diagnosticMessage);
         }
 
+        function parseIdentifierShouldNotBeKeyword(diagnosticMessage?: DiagnosticMessage): Identifier {
+            const isId = isIdentifier()
+            if (isId) {
+                return createIdentifier(true, diagnosticMessage);
+            }
+
+            if(tokenIsIdentifierOrKeyword(token())) {
+                const identifier = createIdentifier(true, diagnosticMessage);
+                identifier.shouldNotKeyword = true;
+                return identifier;
+            }
+            return createIdentifier(false, diagnosticMessage);
+        }
+
         function isLiteralPropertyName(): boolean {
             return tokenIsIdentifierOrKeyword(token()) ||
                 token() === SyntaxKind.StringLiteral ||
@@ -1876,7 +1890,7 @@ namespace ts {
                 case ParsingContext.ArrayBindingElements:
                     return token() === SyntaxKind.CommaToken || token() === SyntaxKind.DotDotDotToken || isBindingIdentifierOrPrivateIdentifierOrPattern();
                 case ParsingContext.TypeParameters:
-                    return isIdentifier();
+                    return tokenIsIdentifierOrKeyword(token());
                 case ParsingContext.ArrayLiteralMembers:
                     switch (token()) {
                         case SyntaxKind.CommaToken:
@@ -2868,7 +2882,7 @@ namespace ts {
 
         function parseTypeParameter(): TypeParameterDeclaration {
             const pos = getNodePos();
-            const name = parseIdentifier();
+            const name = parseIdentifierShouldNotBeKeyword();
             let constraint: TypeNode | undefined;
             let expression: Expression | undefined;
             if (parseOptional(SyntaxKind.ExtendsKeyword)) {

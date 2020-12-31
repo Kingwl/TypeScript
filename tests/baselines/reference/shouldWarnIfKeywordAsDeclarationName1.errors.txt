@@ -1,0 +1,12 @@
+tests/cases/compiler/shouldWarnIfKeywordAsDeclarationName1.ts(1,8): error TS1003: Identifier expected.
+tests/cases/compiler/shouldWarnIfKeywordAsDeclarationName1.ts(3,12): error TS1003: Identifier expected.
+
+
+==== tests/cases/compiler/shouldWarnIfKeywordAsDeclarationName1.ts (2 errors) ====
+    type T<enum> = number;
+           ~~~~
+!!! error TS1003: Identifier expected.
+    
+    function f<enum> () {};
+               ~~~~
+!!! error TS1003: Identifier expected.

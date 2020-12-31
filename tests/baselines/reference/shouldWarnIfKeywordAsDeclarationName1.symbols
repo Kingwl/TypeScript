@@ -1,0 +1,9 @@
+=== tests/cases/compiler/shouldWarnIfKeywordAsDeclarationName1.ts ===
+type T<enum> = number;
+>T : Symbol(T, Decl(shouldWarnIfKeywordAsDeclarationName1.ts, 0, 0))
+>enum : Symbol(enum, Decl(shouldWarnIfKeywordAsDeclarationName1.ts, 0, 7))
+
+function f<enum> () {};
+>f : Symbol(f, Decl(shouldWarnIfKeywordAsDeclarationName1.ts, 0, 22))
+>enum : Symbol(enum, Decl(shouldWarnIfKeywordAsDeclarationName1.ts, 2, 11))
+

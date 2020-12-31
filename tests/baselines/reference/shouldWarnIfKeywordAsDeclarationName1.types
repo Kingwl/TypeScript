@@ -1,0 +1,7 @@
+=== tests/cases/compiler/shouldWarnIfKeywordAsDeclarationName1.ts ===
+type T<enum> = number;
+>T : number
+
+function f<enum> () {};
+>f : <enum>() => void
+

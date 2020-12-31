@@ -3584,6 +3584,10 @@
         "category": "Error",
         "code": 4111
     },
+    "Keyword '{0}' cannot be used as a declaration name.": {
+        "category": "Error",
+        "code": 4112
+    },
 
     "The current host does not support the '{0}' option.": {
         "category": "Error",
